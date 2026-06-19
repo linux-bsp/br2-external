@@ -50,7 +50,7 @@ command as root:
 *** WARNING! This will destroy all the card content. Use with care! ***
 
 For details about the medium image layout, see the definition in
-buildroot-external-tree/board/freescale/common/imx/genimage.cfg.template.
+buildroot-external-tree/board/freescale/imx6ull-evk/genimage.cfg.template.
 
 Boot the i.MX6ULL EVK board
 ===========================
