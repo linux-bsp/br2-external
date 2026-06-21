@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# 1. 设置基础环境变量
+export PATH=/sbin:/bin:/usr/sbin:/usr/bin:$PATH
+
+# 2. 确保挂载点目录存在（防止 mount -a 报错）
+mkdir -p /proc /sys /run /tmp /var
+
+# 3. 一键挂载 fstab 中定义的所有文件系统（包括 proc, sysfs, tmpfs）
+/bin/mount -a
+
+# 创建目录
+mkdir /var/log /var/lock
+
+# 4. 初始化动态设备管理节点
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+/sbin/mdev -s
+
+# 5. 设置主机名
+# /bin/hostname am62x
+
+echo "=== System basic initialization completed ==="
+
+# 6. 运行所有启动服务脚本
+for i in /etc/init.d/S??* ; do
+    [ ! -f "$i" ] && continue
+    case "$i" in
+        *.sh) (trap - INT QUIT TSTP; set start; . $i) ;;
+        *) $i start ;;
+    esac
+done
