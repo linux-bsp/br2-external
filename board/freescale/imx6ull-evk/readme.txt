@@ -6,8 +6,8 @@ This file documents the Buildroot support for the Freescale i.MX6ULL EVK board
 using Upstream U-Boot and Linux.
 
 This external tree configuration uses local source overrides for:
-- Linux: /home/wanguo/IMX6ULL/linux-7.0
-- U-Boot: /home/wanguo/IMX6ULL/uboot-2024.10
+- Linux: ../linux/linux-7.0
+- U-Boot: ../uboot/uboot-2024.10
 
 Build
 =====
@@ -16,7 +16,7 @@ First, configure Buildroot for your i.MX6ULL EVK board:
 
 In order to do so issue:
 
-  make BR2_EXTERNAL=/home/wanguo/IMX6ULL/buildroot-external-tree imx6ullevk_defconfig
+  make BR2_EXTERNAL=../br2-external imx6ullevk_defconfig
 
 Build all components:
 
@@ -50,7 +50,7 @@ command as root:
 *** WARNING! This will destroy all the card content. Use with care! ***
 
 For details about the medium image layout, see the definition in
-buildroot-external-tree/board/freescale/imx6ull-evk/genimage.cfg.template.
+br2-external/board/freescale/imx6ull-evk/genimage.cfg.template.
 
 Boot the i.MX6ULL EVK board
 ===========================

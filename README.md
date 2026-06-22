@@ -32,8 +32,8 @@ external tree.
 The current board configuration uses local source overrides from the BSP
 workspace:
 
-- `../linux-7.0`
-- `../uboot-2024.10`
+- `../linux/linux-7.0`
+- `../uboot/uboot-2024.10`
 - `../lpf`
 
 ## Adding Board Support
