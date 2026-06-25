@@ -2,18 +2,17 @@
 
 This repository contains the Buildroot external tree used by the BSP workspace.
 It is intended to host board-specific Buildroot integration for multiple boards,
-including the i.MX6ULL ATK-DL6Y2C board.
+not only the NXP i.MX6ULL EVK.
 
 Each board should keep its Buildroot defconfig, board files, post-image scripts,
 root filesystem overlays, and package overrides under a board-specific directory.
-Existing i.MX6ULL support is one board configuration in this external tree.
+Existing i.MX6ULL EVK support is one board configuration in this external tree.
 
 ## Current Board Support
 
-- `configs/imx6ull_defconfig` for the i.MX6ULL default profile
-- `configs/imx6ull_debug_defconfig` for the i.MX6ULL debug profile
-- `configs/imx6ull_sdk_defconfig` for the i.MX6ULL SDK profile
-- `board/freescale/imx6ull/` for i.MX6ULL board files
+- `configs/imx6ullevk_defconfig` for the NXP i.MX6ULL EVK
+- `configs/imx6ullevk_debug_study_defconfig` for the i.MX6ULL EVK debug/study profile
+- `board/freescale/imx6ull-evk/` for i.MX6ULL EVK board files
 - `package/lpf/` for LPF integration
 
 ## Build
@@ -22,12 +21,13 @@ From the BSP workspace root, run Buildroot with this external tree:
 
 ```sh
 cd buildroot
-make BR2_EXTERNAL=../br2-external imx6ull_defconfig
+make BR2_EXTERNAL=../br2-external imx6ullevk_defconfig
 make
 ```
 
-The i.MX6ULL defconfigs keep the BSP board-specific paths and source overrides
-in this external tree.
+The i.MX6ULL EVK defconfig is derived from Buildroot's upstream
+`configs/imx6ullevk_defconfig`, with board-specific paths redirected to this
+external tree.
 
 The current board configuration uses local source overrides from the BSP
 workspace:
@@ -48,6 +48,6 @@ When adding another board, keep the layout predictable:
   named board-local makefile.
 - Document board-specific build and boot steps in the board directory.
 
-Use the i.MX6ULL files as a reference for the current structure, but avoid
+Use the i.MX6ULL EVK files as a reference for the current structure, but avoid
 hard-coding new board support to i.MX6ULL-specific paths or names unless the
 configuration is genuinely i.MX6ULL-specific.
