@@ -72,7 +72,7 @@ define PAF_DISTCLEAN_CMDS
 	-$(MAKE) -C $(@D) distclean
 endef
 
-# Install userspace libraries and kernel modules to target.
+# Install userspace shared libraries, tools, and kernel modules to target.
 define PAF_INSTALL_TARGET_CMDS
 	@echo "PAF: Installing to target"
 	$(MAKE) -C $(@D) \
@@ -101,7 +101,7 @@ define PAF_INSTALL_TARGET_CMDS
 	@echo "PAF: Target installation complete"
 endef
 
-# Optional: Install development headers and userspace libraries to staging.
+# Optional: Install development headers and userspace shared libraries to staging.
 ifeq ($(BR2_PACKAGE_PAF_INSTALL_HEADERS),y)
 PAF_INSTALL_STAGING = YES
 define PAF_INSTALL_STAGING_CMDS
