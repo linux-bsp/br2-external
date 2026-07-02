@@ -32,6 +32,10 @@ run_claim_test_if_present()
 log "modprobe pdm"
 modprobe pdm
 
+if [ -r /etc/pdm/mcu-transports.conf ]; then
+    log "runtime transport config: /etc/pdm/mcu-transports.conf"
+fi
+
 if have_cmd pdebug; then
     log "pdebug discovery info"
     pdebug discovery info || true

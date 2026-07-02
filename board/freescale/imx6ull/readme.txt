@@ -86,6 +86,16 @@ The rootfs overlay starts PDM through `/etc/init.d/S03pdm`. On the board, use:
 `module-test.sh` loads `pdm.ko`, prints manager discovery information, and runs
 `pdi_claim_test` for MCU/LED devices that expose a shared ioctl endpoint.
 
+For user-owned PDM communication endpoints, DTS keeps only stable hardware and
+discovery metadata. The rootfs overlay installs runtime transport policy at:
+
+  /etc/pdm/mcu-transports.conf
+
+The current board CAN endpoint uses the `[mcu.can.3]` section for request and
+response CAN IDs, timeout, and retry policy. UART and network sections are
+provided as commented templates; enable them only after reserving the matching
+user-owned PDM endpoint and adding a userspace transport owner.
+
 KGDB over serial
 ================
 
