@@ -32,8 +32,8 @@ run_claim_test_if_present()
 log "modprobe pdm"
 modprobe pdm
 
-if [ -r /etc/pdm/mcu-transports.conf ]; then
-    log "runtime transport config: /etc/pdm/mcu-transports.conf"
+if [ -r /etc/pdm/pdm-userspace.conf ]; then
+    log "runtime transport config: /etc/pdm/pdm-userspace.conf"
 fi
 
 if have_cmd pdebug; then

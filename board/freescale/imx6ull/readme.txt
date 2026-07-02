@@ -89,12 +89,12 @@ The rootfs overlay starts PDM through `/etc/init.d/S03pdm`. On the board, use:
 For user-owned PDM communication endpoints, DTS keeps only stable hardware and
 discovery metadata. The rootfs overlay installs runtime transport policy at:
 
-  /etc/pdm/mcu-transports.conf
+  /etc/pdm/pdm-userspace.conf
 
-The current board CAN endpoint uses the `[mcu.can.3]` section for request and
-response CAN IDs, timeout, and retry policy. UART and network sections are
-provided as commented templates; enable them only after reserving the matching
-user-owned PDM endpoint and adding a userspace transport owner.
+The current board enables `[mcu.can.3]`, `[mcu.uart.2]`, and `[mcu.net.0]`
+sections. UART uses the UART3 RS485 interface as `/dev/ttymxc2`; network uses
+`192.168.18.245` as the configured remote peer. A userspace transport owner is
+responsible for consuming this file and exposing the product command endpoint.
 
 KGDB over serial
 ================
