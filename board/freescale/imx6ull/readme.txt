@@ -61,6 +61,31 @@ To boot your newly created system:
   emulator at 115200 bps, 8n1;
 - power on the board.
 
+
+PAF / PDM debug workflow
+========================
+
+The debug Buildroot profile enables the external PAF package with
+`BR2_PACKAGE_PAF_DEFCONFIG="imx6ull_debug_defconfig"`. The board-local
+`local.mk` overrides PAF to `../paf`, so the image uses the workspace PAF tree.
+
+When the PAF defconfig enables `CONFIG_PDI`, `CONFIG_PDEBUG`, and
+`CONFIG_PDI_CLAIM_TEST`, the target image installs:
+
+  - /usr/lib/libpdi.so
+  - /usr/bin/pdebug
+  - /usr/bin/pdi_claim_test
+  - /lib/modules/<kernel>/extra/pdm/pdm.ko
+
+The rootfs overlay starts PDM through `/etc/init.d/S03pdm`. On the board, use:
+
+  /etc/init.d/S03pdm status
+  pdebug discovery list
+  module-test.sh
+
+`module-test.sh` loads `pdm.ko`, prints manager discovery information, and runs
+`pdi_claim_test` for MCU/LED devices that expose a shared ioctl endpoint.
+
 KGDB over serial
 ================
 

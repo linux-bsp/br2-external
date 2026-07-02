@@ -6,7 +6,8 @@ config BR2_PACKAGE_PAF
 	help
 	  PAF is a Linux peripheral access framework with a
 	  Kconfig+CMake/Kbuild build system. It provides the PDM kernel
-	  module, UAPI headers, and PDI layers for Linux systems.
+	  module, the shared PDI userspace library, UAPI headers, and
+	  optional PDI tools such as pdebug and pdi_claim_test.
 
 if BR2_PACKAGE_PAF
 
@@ -16,7 +17,10 @@ config BR2_PACKAGE_PAF_DEFCONFIG
 	help
 	  Specify which PAF defconfig to load before building.
 	  Product external trees should set this to a product-specific
-	  PAF defconfig, for example imx6ull_modules_defconfig.
+	  PAF defconfig, for example imx6ull_modules_defconfig. Debug
+	  images should use a defconfig that enables CONFIG_PDI,
+	  CONFIG_PDEBUG, and CONFIG_PDI_CLAIM_TEST when board-side claim
+	  validation is required.
 
 choice
 	prompt "Build type"
