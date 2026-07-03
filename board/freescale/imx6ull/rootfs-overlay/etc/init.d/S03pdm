@@ -1,14 +1,22 @@
 #!/bin/sh
+#
+# S03pdm - PDM framework initialization
+#
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 NAME="S03pdm"
 MODULES="pdm"
+
+# CAN configuration (overridable via /etc/default/pdm)
 CAN_IFACE="${CAN_IFACE:-can0}"
 CAN_BITRATE="${CAN_BITRATE:-500000}"
 CAN_FD="${CAN_FD:-0}"
 CAN_DBITRATE="${CAN_DBITRATE:-2000000}"
 CAN_RESTART_MS="${CAN_RESTART_MS:-100}"
+
+# Load optional configuration
+[ -r /etc/default/pdm ] && . /etc/default/pdm
 
 log()
 {
@@ -31,38 +39,32 @@ can_fd_enabled()
         1|y|Y|yes|YES|true|TRUE|on|ON)
             return 0
             ;;
-        *)
-            return 1
-            ;;
     esac
+    return 1
 }
 
 setup_can()
 {
-    local can_desc
-
-    if ! can_available; then
-        log "$CAN_IFACE is not available"
-        return 1
-    fi
+    can_available || return 1
 
     ip link set "$CAN_IFACE" down 2>/dev/null || true
+
     if can_fd_enabled; then
-        can_desc="bitrate=$CAN_BITRATE dbitrate=$CAN_DBITRATE fd=on restart-ms=$CAN_RESTART_MS"
-        if ! ip link set "$CAN_IFACE" type can bitrate "$CAN_BITRATE" dbitrate "$CAN_DBITRATE" fd on restart-ms "$CAN_RESTART_MS"; then
-            log "failed to configure $CAN_IFACE $can_desc"
-            return 1
-        fi
+        ip link set "$CAN_IFACE" type can \
+            bitrate "$CAN_BITRATE" \
+            dbitrate "$CAN_DBITRATE" \
+            fd on \
+            restart-ms "$CAN_RESTART_MS" || return 1
+        log "$CAN_IFACE configured: bitrate=$CAN_BITRATE dbitrate=$CAN_DBITRATE fd=on"
     else
-        can_desc="bitrate=$CAN_BITRATE restart-ms=$CAN_RESTART_MS"
-        if ! ip link set "$CAN_IFACE" type can bitrate "$CAN_BITRATE" restart-ms "$CAN_RESTART_MS"; then
-            log "failed to configure $CAN_IFACE $can_desc"
-            return 1
-        fi
+        ip link set "$CAN_IFACE" type can \
+            bitrate "$CAN_BITRATE" \
+            restart-ms "$CAN_RESTART_MS" || return 1
+        log "$CAN_IFACE configured: bitrate=$CAN_BITRATE"
     fi
 
     if ip link set "$CAN_IFACE" up; then
-        log "$CAN_IFACE up $can_desc"
+        log "$CAN_IFACE up"
         return 0
     fi
 
@@ -90,16 +92,11 @@ load_module()
 
 start()
 {
-    local ret=0
-    local module
+    # Configure CAN if available
+    can_available && setup_can
 
-    setup_can || ret=1
-
-    for module in $MODULES; do
-        load_module "$module" || ret=1
-    done
-
-    return "$ret"
+    # Load PDM module
+    load_module pdm
 }
 
 stop()
@@ -109,21 +106,15 @@ stop()
 
 status()
 {
-    local module
-
     if can_available; then
         ip -details link show "$CAN_IFACE"
-    else
-        echo "$CAN_IFACE: unavailable"
     fi
 
-    for module in $MODULES; do
-        if module_loaded "$module"; then
-            echo "$module: loaded"
-        else
-            echo "$module: not loaded"
-        fi
-    done
+    if module_loaded pdm; then
+        echo "pdm: loaded"
+    else
+        echo "pdm: not loaded"
+    fi
 }
 
 case "$1" in
