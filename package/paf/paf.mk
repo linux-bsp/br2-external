@@ -17,6 +17,24 @@ PAF_ADD_TOOLCHAIN_DEPENDENCY = NO
 # Dependencies - Kconfig + CMake/Kbuild build system
 PAF_DEPENDENCIES = host-pkgconf host-cmake host-flex host-bison linux
 
+ifeq ($(BR2_PACKAGE_PAF_PDI_BMC_REDFISH),y)
+PAF_DEPENDENCIES += libcurl cjson
+endif
+
+# Local override builds must not sync stale Kbuild products from the PAF
+# workspace into Buildroot. Linux refuses external modules when modules.order
+# exists in the module source tree.
+PAF_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = \
+	--exclude='*.o' \
+	--exclude='*.o.d' \
+	--exclude='*.ko' \
+	--exclude='*.mod' \
+	--exclude='*.mod.c' \
+	--exclude='.*.cmd' \
+	--exclude='Module.symvers' \
+	--exclude='modules.order' \
+	--exclude='.tmp_versions'
+
 # Kconfig configuration to use (from Buildroot config)
 PAF_KCONFIG_DEFCONFIG = $(call qstrip,$(BR2_PACKAGE_PAF_DEFCONFIG))
 
