@@ -21,6 +21,10 @@ ifeq ($(BR2_PACKAGE_PAF_PDI_BMC_REDFISH),y)
 PAF_DEPENDENCIES += libcurl cjson
 endif
 
+ifeq ($(BR2_PACKAGE_PAF_PDI_BMC_IPMI),y)
+PAF_DEPENDENCIES += freeipmi
+endif
+
 # Local override builds must not sync stale Kbuild products from the PAF
 # workspace into Buildroot. Linux refuses external modules when modules.order
 # exists in the module source tree.
