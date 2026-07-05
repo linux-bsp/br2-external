@@ -44,6 +44,14 @@ config BR2_PACKAGE_PAF_PDI_BMC_IPMI
 	  libgcrypt is selected when available so FreeIPMI can support IPMI 2.0
 	  RMCP+ network sessions.
 
+config BR2_PACKAGE_PAF_TB_MQTT_PUB
+	bool "Enable PAF ThingsBoard MQTT app dependencies"
+	depends on !BR2_STATIC_LIBS
+	select BR2_PACKAGE_MOSQUITTO
+	help
+	  Select this when the PAF defconfig enables CONFIG_TB_MQTT_PUB.
+	  It provides libmosquitto for the tb_mqtt_pub telemetry publisher.
+
 
 choice
 	prompt "Build type"

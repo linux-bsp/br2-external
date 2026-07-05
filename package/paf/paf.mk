@@ -25,6 +25,10 @@ ifeq ($(BR2_PACKAGE_PAF_PDI_BMC_IPMI),y)
 PAF_DEPENDENCIES += freeipmi
 endif
 
+ifeq ($(BR2_PACKAGE_PAF_TB_MQTT_PUB),y)
+PAF_DEPENDENCIES += mosquitto
+endif
+
 # Local override builds must not sync stale Kbuild products from the PAF
 # workspace into Buildroot. Linux refuses external modules when modules.order
 # exists in the module source tree.
