@@ -9,41 +9,10 @@ NAME="S04pwatchdogd"
 DAEMON="/usr/bin/pwatchdogd"
 PIDFILE="/var/run/pwatchdogd.pid"
 
-ENABLED=1
-WATCHDOG_PATH="/dev/watchdog0"
-WATCHDOG_TIMEOUT_SEC="10"
-MCU_NAME="main_mcu"
-INTERVAL_MS="1000"
-USE_WATCHDOG=1
-USE_HEARTBEAT=1
-DISABLE_ON_EXIT=0
-EXTRA_ARGS=
-
-[ -r /etc/default/pwatchdogd ] && . /etc/default/pwatchdogd
 
 log()
 {
     echo "[$NAME] $*"
-}
-
-enabled()
-{
-    case "$ENABLED" in
-        1|y|Y|yes|YES|true|TRUE|on|ON)
-            return 0
-            ;;
-    esac
-    return 1
-}
-
-truthy()
-{
-    case "$1" in
-        1|y|Y|yes|YES|true|TRUE|on|ON)
-            return 0
-            ;;
-    esac
-    return 1
 }
 
 running()
@@ -54,38 +23,8 @@ running()
     kill -0 "$pid" 2>/dev/null
 }
 
-build_args()
-{
-    ARGS="--interval-ms $INTERVAL_MS"
-
-    if truthy "$USE_WATCHDOG"; then
-        ARGS="$ARGS --watchdog $WATCHDOG_PATH"
-        [ -n "$WATCHDOG_TIMEOUT_SEC" ] && \
-            ARGS="$ARGS --timeout $WATCHDOG_TIMEOUT_SEC"
-    else
-        ARGS="$ARGS --no-watchdog"
-    fi
-
-    if truthy "$USE_HEARTBEAT"; then
-        ARGS="$ARGS --mcu $MCU_NAME"
-    else
-        ARGS="$ARGS --no-heartbeat"
-    fi
-
-    if truthy "$DISABLE_ON_EXIT"; then
-        ARGS="$ARGS --disable-on-exit"
-    fi
-
-    [ -n "$EXTRA_ARGS" ] && ARGS="$ARGS $EXTRA_ARGS"
-}
-
 start()
 {
-    enabled || {
-        log "disabled by /etc/default/pwatchdogd"
-        return 0
-    }
-
     [ -x "$DAEMON" ] || {
         log "$DAEMON not found or not executable"
         return 1
@@ -96,9 +35,8 @@ start()
         return 0
     fi
 
-    build_args
-    log "starting: $DAEMON $ARGS"
-    start-stop-daemon -S -q -b -m -p "$PIDFILE" -x "$DAEMON" -- $ARGS
+    log "starting: $DAEMON"
+    start-stop-daemon -S -q -b -m -p "$PIDFILE" -x "$DAEMON"
 }
 
 stop()
