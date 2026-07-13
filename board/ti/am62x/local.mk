@@ -6,6 +6,8 @@
 UBOOT_OVERRIDE_SRCDIR = $(TOPDIR)/../uboot/ti-u-boot-2025.10
 LINUX_OVERRIDE_SRCDIR = $(TOPDIR)/../linux/ti-linux-kernel-6.18.13
 
+# PAF local source used when BR2_PACKAGE_PAF is enabled.
+PAF_OVERRIDE_SRCDIR = $(TOPDIR)/../paf
+
 # TI K3 R5 Loader uses the same U-Boot source tree as the A53 U-Boot
 TI_K3_R5_LOADER_OVERRIDE_SRCDIR = $(TOPDIR)/../uboot/ti-u-boot-2025.10
-

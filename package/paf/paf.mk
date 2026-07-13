@@ -8,7 +8,7 @@
 # Product trees can set PAF_OVERRIDE_SRCDIR in BR2_PACKAGE_OVERRIDE_FILE for
 # local development or board integration testing.
 PAF_VERSION = v1.0.0
-PAF_SITE = ssh://gitea@192.168.18.254:4022/CSPD/PAF.git
+PAF_SITE = https://github.com/linux-bsp/paf.git
 PAF_SITE_METHOD = git
 PAF_LICENSE = Proprietary
 PAF_INSTALL_TARGET = YES
