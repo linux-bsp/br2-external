@@ -4,7 +4,7 @@
 # relying on an untracked local.mk in the Buildroot root directory.
 
 UBOOT_OVERRIDE_SRCDIR = $(TOPDIR)/../uboot/u-boot-2026.04
-LINUX_OVERRIDE_SRCDIR = $(TOPDIR)/../linux/ti-linux-kernel-6.18.13
+LINUX_OVERRIDE_SRCDIR = $(TOPDIR)/../linux/linux-7.0
 
 # PAF local source used when BR2_PACKAGE_PAF is enabled.
 PAF_OVERRIDE_SRCDIR = $(TOPDIR)/../paf
