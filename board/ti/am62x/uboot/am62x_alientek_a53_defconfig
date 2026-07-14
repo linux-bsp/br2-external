@@ -35,7 +35,7 @@ CONFIG_SPL_SPI=y
 # CONFIG_SYS_MALLOC_CLEAR_ON_INIT is not set
 # CONFIG_BOARD_INIT is not set
 CONFIG_BOOTSTD_FULL=y
-CONFIG_BOOTCOMMAND="run findfdt; run envboot; bootflow scan -lb"
+CONFIG_BOOTCOMMAND="mmc dev 1 && mmc read ${loadaddr} 0x3800 0xb800 && mmc read ${fdtaddr} 0xf000 0x800 && setenv kernel_comp_addr_r 0x90000000 && setenv kernel_comp_size 0x01700000 && setenv bootargs 'console=ttyS2,115200n8 earlycon=ns16550a,mmio32,0x02800000 root=/dev/mmcblk1p7 rootfstype=squashfs ro rootwait blkdevparts=mmcblk1:1M(tiboot3),2M(tispl),2M(uboot),2M(uboot-env),23M(kernel),1M(dtb),-(rootfs)' && booti ${loadaddr} - ${fdtaddr}; bootflow scan -lb"
 CONFIG_BOARD_LATE_INIT=y
 CONFIG_SPL_MAX_SIZE=0x58000
 CONFIG_SPL_SYS_REPORT_STACK_F_USAGE=y
