@@ -19,10 +19,4 @@ config BR2_H200_DTB_3RD
 	  This is an alternative device tree configuration.
 
 endchoice
-
-config BR2_H200_DTB_FILE
-	string
-	default "k3-am625-sk.dtb" if BR2_H200_DTB_SK
-	default "k3-am625-3rd.dtb" if BR2_H200_DTB_3RD
-
 endmenu
