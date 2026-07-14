@@ -1,7 +1,7 @@
 #
-# Minimal Busybox config for initramfs
+# Minimal BusyBox config for the AM62x root filesystem
 # Busybox version: 1.36.1
-# Optimized for fast boot and small size
+# Includes the applets required by Buildroot SysV init scripts
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -40,7 +40,7 @@ CONFIG_FEATURE_SYSLOG=y
 #
 # Build Options
 #
-CONFIG_STATIC=y
+# CONFIG_STATIC is not set
 # CONFIG_PIE is not set
 # CONFIG_NOMMU is not set
 # CONFIG_BUILD_LIBBUSYBOX is not set
@@ -263,7 +263,7 @@ CONFIG_FOLD=y
 CONFIG_HEAD=y
 CONFIG_FEATURE_FANCY_HEAD=y
 # CONFIG_HOSTID is not set
-# CONFIG_ID is not set
+CONFIG_ID=y
 # CONFIG_GROUPS is not set
 # CONFIG_INSTALL is not set
 # CONFIG_FEATURE_INSTALL_LONG_OPTIONS is not set
@@ -398,11 +398,11 @@ CONFIG_RESET=y
 # Debian Utilities
 #
 # CONFIG_PIPE_PROGRESS is not set
-# CONFIG_RUN_PARTS is not set
+CONFIG_RUN_PARTS=y
 # CONFIG_FEATURE_RUN_PARTS_LONG_OPTIONS is not set
 # CONFIG_FEATURE_RUN_PARTS_FANCY is not set
-# CONFIG_START_STOP_DAEMON is not set
-# CONFIG_FEATURE_START_STOP_DAEMON_LONG_OPTIONS is not set
+CONFIG_START_STOP_DAEMON=y
+CONFIG_FEATURE_START_STOP_DAEMON_LONG_OPTIONS=y
 # CONFIG_FEATURE_START_STOP_DAEMON_FANCY is not set
 # CONFIG_WHICH is not set
 

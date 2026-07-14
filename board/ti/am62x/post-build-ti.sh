@@ -33,3 +33,4 @@ mkdir -p $TARGET_DIR/lib/firmware/ti-connectivity
 cp $BUILD_DIR/ti-k3-boot-firmware-*/ti-ipc/am62xx/am62-mcu-m4f0_0-fw $TARGET_DIR/lib/firmware/
 cp $BUILD_DIR/ti-k3-boot-firmware-*/ti-connectivity/* $TARGET_DIR/lib/firmware/ti-connectivity/
 
+ln -snf /run/dropbear "$TARGET_DIR/etc/dropbear"
