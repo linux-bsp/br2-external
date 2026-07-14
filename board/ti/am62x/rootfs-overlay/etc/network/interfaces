@@ -7,6 +7,3 @@ iface eth0 inet static
     netmask 255.255.255.0
     gateway 192.168.1.1
     dns-nameservers 223.5.5.5 223.6.6.6
-
-auto eth1
-iface eth1 inet dhcp
