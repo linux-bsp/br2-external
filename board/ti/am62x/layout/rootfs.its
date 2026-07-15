@@ -1,0 +1,29 @@
+/dts-v1/;
+
+/ {
+	description = "TI AM62x root filesystem";
+
+	images {
+		rootfs {
+			description = "Buildroot root filesystem";
+			type = "firmware";
+			arch = "arm64";
+			os = "linux";
+			compression = "none";
+			hash-1 { algo = "sha256"; };
+		};
+	};
+
+	configurations {
+		default = "conf-1";
+		conf-1 {
+			description = "TI AM62x root filesystem";
+			fu,type = "rootfs";
+			fu,product = "ti-am62x";
+			fu,layout-id = "am62x-raw-v1";
+			fu,version = <1>;
+			fu,rollback-index = <0>;
+			firmware = "rootfs";
+		};
+	};
+};
