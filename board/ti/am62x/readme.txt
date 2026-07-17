@@ -69,7 +69,7 @@ The layout directory keeps the physical image layout and one small ITS file per
 component:
 
   board/ti/am62x/layout/genimage_ti.cfg
-  board/ti/am62x/layout/boot.its
+  board/ti/am62x/layout/bootloader.its
   board/ti/am62x/layout/kernel.its
   board/ti/am62x/layout/rootfs.its
 
@@ -85,7 +85,7 @@ with the same basename. The generic script does not need to change.
 
 Buildroot keeps its normal artifacts and adds:
 
-  output/images/release/boot.itb
+  output/images/release/bootloader.itb
   output/images/release/kernel.itb
   output/images/release/rootfs.itb
   output/images/sdcard.img
