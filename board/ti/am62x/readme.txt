@@ -95,10 +95,12 @@ Buildroot keeps its normal artifacts and adds:
   output/images/sdcard.img
 
 The SD image uses layout am62x-sd-ab-v1: two 64 KiB metadata copies, 24 MiB
-kernel slots, and 128 MiB rootfs slots. Online bootloader packages update only
-tispl and U-Boot in the inactive slot. The immutable tiboot3_a at offset 0
-remains the ROM-loaded first-stage selector; tiboot3 is installed only by
-factory or recovery workflows.
+kernel slots, and 128 MiB rootfs slots. A bootloader package contains tiboot3,
+tispl, and U-Boot and writes the complete chain to the target slot. U-Boot is
+written first, followed by tispl and then tiboot3. On AM62x SD RAW boot the ROM
+always reads tiboot3_a at offset 0, so updating slot A is intended for
+development and may require reflashing if it is interrupted or the image does
+not boot.
 
 The first configured Buildroot DTB is exported as FW_DTB_FILE. A board can
 override FW_DTB_FILE in the post-image environment when automatic selection is

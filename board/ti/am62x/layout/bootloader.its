@@ -4,6 +4,15 @@
 	description = "TI AM62x bootloader update";
 
 	images {
+		tiboot3 {
+			description = "AM62x tiboot3";
+			type = "firmware";
+			arch = "arm";
+			os = "u-boot";
+			compression = "none";
+			hash-1 { algo = "sha256"; };
+		};
+
 		tispl {
 			description = "AM62x tispl";
 			type = "firmware";
@@ -32,8 +41,8 @@
 			fu,layout-id = "am62x-sd-ab-v1";
 			fu,version = <1>;
 			fu,rollback-index = <0>;
-			firmware = "uboot";
-			loadables = "tispl";
+			firmware = "tiboot3";
+			loadables = "tispl", "uboot";
 		};
 	};
 };
