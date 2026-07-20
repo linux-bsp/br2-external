@@ -25,6 +25,8 @@ GENIMAGE_CFG="$3"
 CONFIG_DIR="$(CDPATH= cd -- "$(dirname -- "${GENIMAGE_CFG}")" && pwd)"
 GENIMAGE_CFG="${CONFIG_DIR}/$(basename -- "${GENIMAGE_CFG}")"
 MKIMAGE="${HOST_DIR}/bin/mkimage"
+RELEASE_TEMPLATE="${CONFIG_DIR}/release.its.in"
+MEDIA_CFG="${CONFIG_DIR}/genimage_sdcard.cfg"
 
 [ -x "${MKIMAGE}" ] || die "mkimage is not available"
 
@@ -48,6 +50,29 @@ for ITS_PATH in ${ITS_LIST}; do
 done
 
 PATH="${HOST_DIR}/bin:${PATH}" GENIMAGE_MKIMAGE="${MKIMAGE}" support/scripts/genimage.sh -c "${GENIMAGE_CFG}"
+
+if [ -f "${RELEASE_TEMPLATE}" ]; then
+	command -v sha256sum >/dev/null 2>&1 || die "sha256sum is not available"
+	BOOTLOADER_SHA256="$(sha256sum "${BINARIES_DIR}/release/bootloader.itb" | cut -d ' ' -f 1)"
+	KERNEL_SHA256="$(sha256sum "${BINARIES_DIR}/release/kernel.itb" | cut -d ' ' -f 1)"
+	ROOTFS_SHA256="$(sha256sum "${BINARIES_DIR}/release/rootfs.itb" | cut -d ' ' -f 1)"
+	RELEASE_ITS="${BINARIES_DIR}/release/release.its"
+
+	sed -e "s/@BOOTLOADER_SHA256@/${BOOTLOADER_SHA256}/g" \
+	    -e "s/@KERNEL_SHA256@/${KERNEL_SHA256}/g" \
+	    -e "s/@ROOTFS_SHA256@/${ROOTFS_SHA256}/g" \
+	    "${RELEASE_TEMPLATE}" >"${RELEASE_ITS}"
+	if ! "${MKIMAGE}" -f "${RELEASE_ITS}" \
+		"${BINARIES_DIR}/release/release.itb"; then
+		rm -f "${RELEASE_ITS}"
+		die "failed to create release.itb"
+	fi
+	rm -f "${RELEASE_ITS}"
+fi
+
+if [ -f "${MEDIA_CFG}" ]; then
+	PATH="${HOST_DIR}/bin:${PATH}" support/scripts/genimage.sh -c "${MEDIA_CFG}"
+fi
 
 for ITS_PATH in ${ITS_LIST}; do
 	rm -f "${BINARIES_DIR}/${ITS_PATH}"

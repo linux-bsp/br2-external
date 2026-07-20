@@ -1,0 +1,7 @@
+config BR2_PACKAGE_FUCTL
+	bool "fuctl"
+	depends on BR2_USE_MMU
+	help
+	  Install the userspace control utility for the RAW A/B firmware
+	  metadata shared with U-Boot. It supports status, mark-good,
+	  mark-bad, and rollback on the AM62x SD/MMC layout.

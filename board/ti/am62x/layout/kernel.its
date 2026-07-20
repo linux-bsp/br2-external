@@ -30,7 +30,7 @@
 			description = "TI AM62x Linux kernel";
 			fu,type = "kernel";
 			fu,product = "ti-am62x";
-			fu,layout-id = "am62x-raw-v1";
+			fu,layout-id = "am62x-sd-ab-v1";
 			fu,version = <1>;
 			fu,rollback-index = <0>;
 			kernel = "kernel";

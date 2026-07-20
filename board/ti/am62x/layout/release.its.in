@@ -1,0 +1,38 @@
+/dts-v1/;
+
+/ {
+	description = "TI AM62x firmware release";
+
+	images {
+		manifest {
+			description = "TI AM62x release manifest";
+			data = "kernel and rootfs release";
+			type = "firmware";
+			arch = "arm64";
+			compression = "none";
+			hash-1 { algo = "sha256"; };
+		};
+	};
+
+	configurations {
+		default = "conf-1";
+
+		conf-1 {
+			description = "TI AM62x firmware release";
+			fu,type = "release";
+			fu,product = "ti-am62x";
+			fu,layout-id = "am62x-sd-ab-v1";
+			fu,version = <1>;
+			fu,rollback-index = <0>;
+			fu,components = "bootloader", "kernel", "rootfs";
+			fu,bootloader-file = "release/bootloader.itb";
+			fu,bootloader-sha256 = "@BOOTLOADER_SHA256@";
+			fu,kernel-file = "release/kernel.itb";
+			fu,kernel-sha256 = "@KERNEL_SHA256@";
+			fu,rootfs-file = "release/rootfs.itb";
+			fu,rootfs-sha256 = "@ROOTFS_SHA256@";
+			fu,allow-bootloader;
+			firmware = "manifest";
+		};
+	};
+};

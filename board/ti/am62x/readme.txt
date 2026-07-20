@@ -65,30 +65,40 @@ Each board passes its genimage configuration directly:
 
   board/ti/am62x/layout/genimage_ti.cfg
 
-The layout directory keeps the physical image layout and one small ITS file per
-component:
+The layout directory keeps component generation, the physical media layout,
+one small ITS file per component, and the release manifest template:
 
   board/ti/am62x/layout/genimage_ti.cfg
+  board/ti/am62x/layout/genimage_sdcard.cfg
   board/ti/am62x/layout/bootloader.its
   board/ti/am62x/layout/kernel.its
   board/ti/am62x/layout/rootfs.its
+  board/ti/am62x/layout/release.its.in
 
-genimage_ti.cfg defines the FIT outputs, their input images, and the final RAW
-media layout. The generic script reads every its entry from this file, copies
-the matching ITS from the same directory to output/images, and invokes genimage
-once. genimage injects the partition payloads, calls mkimage, and creates both
-the component FIT files and the RAW media image. Temporary ITS copies are
-removed after a successful build.
+The generic script runs two ordered genimage stages. genimage_ti.cfg first
+creates the component FIT files. The script then hashes kernel.itb and
+rootfs.itb and creates the small release.itb manifest. genimage_sdcard.cfg runs
+last so generated FIT files are regular media inputs rather than zero-sized
+images in the same genimage graph. Temporary ITS copies are removed after a
+successful build.
 
 Adding a component requires one image fit block in genimage_ti.cfg and one ITS
-with the same basename. The generic script does not need to change.
+with the same basename. Physical offsets are maintained only in
+genimage_sdcard.cfg.
 
 Buildroot keeps its normal artifacts and adds:
 
   output/images/release/bootloader.itb
   output/images/release/kernel.itb
   output/images/release/rootfs.itb
+  output/images/release/release.itb
   output/images/sdcard.img
+
+The SD image uses layout am62x-sd-ab-v1: two 64 KiB metadata copies, 24 MiB
+kernel slots, and 128 MiB rootfs slots. Online bootloader packages update only
+tispl and U-Boot in the inactive slot. The immutable tiboot3_a at offset 0
+remains the ROM-loaded first-stage selector; tiboot3 is installed only by
+factory or recovery workflows.
 
 The first configured Buildroot DTB is exported as FW_DTB_FILE. A board can
 override FW_DTB_FILE in the post-image environment when automatic selection is
