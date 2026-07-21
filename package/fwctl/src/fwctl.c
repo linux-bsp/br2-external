@@ -11,24 +11,24 @@
 #include <string.h>
 #include <unistd.h>
 
-#define FU_METADATA_MAGIC 0x46554d44U
-#define FU_METADATA_VERSION 1U
-#define FU_METADATA_SIZE 128U
-#define FU_SLOT_NONE 0xffU
-#define FU_COMPONENT_COUNT 3U
-#define FU_META0_OFFSET 0x00500000ULL
-#define FU_META1_OFFSET 0x00510000ULL
+#define FW_METADATA_MAGIC 0x46574d44U
+#define FW_METADATA_VERSION 1U
+#define FW_METADATA_SIZE 128U
+#define FW_SLOT_NONE 0xffU
+#define FW_COMPONENT_COUNT 3U
+#define FW_META0_OFFSET 0x00500000ULL
+#define FW_META1_OFFSET 0x00510000ULL
 
-enum fu_state {
-	FU_STATE_EMPTY,
-	FU_STATE_WRITING,
-	FU_STATE_READY,
-	FU_STATE_BOOT_TESTING,
-	FU_STATE_CONFIRMED,
-	FU_STATE_FAILED,
+enum fw_state {
+	FW_STATE_EMPTY,
+	FW_STATE_WRITING,
+	FW_STATE_READY,
+	FW_STATE_BOOT_TESTING,
+	FW_STATE_CONFIRMED,
+	FW_STATE_FAILED,
 };
 
-struct fu_disk_component {
+struct fw_disk_component {
 	uint8_t slot;
 	uint8_t valid;
 	uint16_t reserved;
@@ -36,8 +36,8 @@ struct fu_disk_component {
 	uint32_t rollback_index;
 } __attribute__((packed));
 
-struct fu_disk_deployment {
-	struct fu_disk_component component[FU_COMPONENT_COUNT];
+struct fw_disk_deployment {
+	struct fw_disk_component component[FW_COMPONENT_COUNT];
 	uint8_t state;
 	uint8_t tries_remaining;
 	uint8_t successful;
@@ -45,7 +45,7 @@ struct fu_disk_deployment {
 	uint32_t release_version;
 } __attribute__((packed));
 
-struct fu_disk_metadata {
+struct fw_disk_metadata {
 	uint32_t magic;
 	uint16_t format_version;
 	uint16_t header_size;
@@ -57,12 +57,12 @@ struct fu_disk_metadata {
 	uint8_t update_state;
 	uint8_t selected_deployment;
 	uint8_t reserved0[2];
-	struct fu_disk_deployment deployment[2];
+	struct fw_disk_deployment deployment[2];
 	uint8_t reserved1[16];
 	uint32_t crc32;
 } __attribute__((packed));
 
-_Static_assert(sizeof(struct fu_disk_metadata) == FU_METADATA_SIZE,
+_Static_assert(sizeof(struct fw_disk_metadata) == FW_METADATA_SIZE,
 	       "firmware metadata size mismatch");
 
 static const char *const component_names[] = {
@@ -80,7 +80,7 @@ static const char *state_name(uint8_t state)
 		"invalid";
 }
 
-static uint32_t fu_crc32(uint32_t crc, const void *data, size_t len)
+static uint32_t fw_crc32(uint32_t crc, const void *data, size_t len)
 {
 	const uint8_t *p = data;
 	size_t i;
@@ -139,26 +139,26 @@ static int write_full_at(int fd, const void *buf, size_t len, uint64_t offset)
 	return 0;
 }
 
-static int metadata_valid(const struct fu_disk_metadata *metadata)
+static int metadata_valid(const struct fw_disk_metadata *metadata)
 {
 	uint32_t expected, actual;
 
-	if (le32toh(metadata->magic) != FU_METADATA_MAGIC ||
-	    le16toh(metadata->format_version) != FU_METADATA_VERSION ||
-	    le16toh(metadata->header_size) != FU_METADATA_SIZE)
+	if (le32toh(metadata->magic) != FW_METADATA_MAGIC ||
+	    le16toh(metadata->format_version) != FW_METADATA_VERSION ||
+	    le16toh(metadata->header_size) != FW_METADATA_SIZE)
 		return 0;
 	if (metadata->active_deployment > 1 ||
 	    metadata->last_good_deployment > 1 ||
-	    (metadata->pending_deployment != FU_SLOT_NONE &&
+	    (metadata->pending_deployment != FW_SLOT_NONE &&
 	     metadata->pending_deployment > 1) ||
-	    (metadata->boot_once_deployment != FU_SLOT_NONE &&
+	    (metadata->boot_once_deployment != FW_SLOT_NONE &&
 	     metadata->boot_once_deployment > 1) ||
 	    metadata->selected_deployment > 1 ||
-	    metadata->update_state > FU_STATE_FAILED)
+	    metadata->update_state > FW_STATE_FAILED)
 		return 0;
 	expected = le32toh(metadata->crc32);
-	actual = fu_crc32(0, metadata,
-			  offsetof(struct fu_disk_metadata, crc32));
+	actual = fw_crc32(0, metadata,
+			  offsetof(struct fw_disk_metadata, crc32));
 
 	return expected == actual;
 }
@@ -169,9 +169,9 @@ static int sequence_newer(uint32_t lhs, uint32_t rhs)
 }
 
 static int load_metadata(int fd, const uint64_t offsets[2],
-			 struct fu_disk_metadata *metadata, unsigned int *source)
+			 struct fw_disk_metadata *metadata, unsigned int *source)
 {
-	struct fu_disk_metadata copy[2];
+	struct fw_disk_metadata copy[2];
 	int valid[2] = { 0, 0 };
 	int ret;
 
@@ -193,16 +193,16 @@ static int load_metadata(int fd, const uint64_t offsets[2],
 }
 
 static int save_metadata(int fd, const uint64_t offsets[2],
-			 struct fu_disk_metadata *metadata, unsigned int *source)
+			 struct fw_disk_metadata *metadata, unsigned int *source)
 {
-	struct fu_disk_metadata verify;
+	struct fw_disk_metadata verify;
 	unsigned int target = 1U - *source;
 	uint32_t sequence = le32toh(metadata->sequence) + 1U;
 	int ret;
 
 	metadata->sequence = htole32(sequence);
-	metadata->crc32 = htole32(fu_crc32(
-		0, metadata, offsetof(struct fu_disk_metadata, crc32)));
+	metadata->crc32 = htole32(fw_crc32(
+		0, metadata, offsetof(struct fw_disk_metadata, crc32)));
 	ret = write_full_at(fd, metadata, sizeof(*metadata), offsets[target]);
 	if (ret)
 		return ret;
@@ -219,14 +219,14 @@ static int save_metadata(int fd, const uint64_t offsets[2],
 	return 0;
 }
 
-static int deployment_valid(const struct fu_disk_deployment *deployment)
+static int deployment_valid(const struct fw_disk_deployment *deployment)
 {
 	unsigned int i;
 
-	if (deployment->state == FU_STATE_EMPTY ||
-	    deployment->state == FU_STATE_FAILED)
+	if (deployment->state == FW_STATE_EMPTY ||
+	    deployment->state == FW_STATE_FAILED)
 		return 0;
-	for (i = 0; i < FU_COMPONENT_COUNT; i++) {
+	for (i = 0; i < FW_COMPONENT_COUNT; i++) {
 		if (!deployment->component[i].valid ||
 		    deployment->component[i].slot > 1)
 			return 0;
@@ -235,38 +235,38 @@ static int deployment_valid(const struct fu_disk_deployment *deployment)
 	return 1;
 }
 
-static void metadata_init(struct fu_disk_metadata *metadata, uint8_t slot)
+static void metadata_init(struct fw_disk_metadata *metadata, uint8_t slot)
 {
-	struct fu_disk_deployment *deployment;
+	struct fw_disk_deployment *deployment;
 	unsigned int i;
 
 	memset(metadata, 0, sizeof(*metadata));
-	metadata->magic = htole32(FU_METADATA_MAGIC);
-	metadata->format_version = htole16(FU_METADATA_VERSION);
-	metadata->header_size = htole16(FU_METADATA_SIZE);
+	metadata->magic = htole32(FW_METADATA_MAGIC);
+	metadata->format_version = htole16(FW_METADATA_VERSION);
+	metadata->header_size = htole16(FW_METADATA_SIZE);
 	metadata->active_deployment = 0;
-	metadata->pending_deployment = FU_SLOT_NONE;
+	metadata->pending_deployment = FW_SLOT_NONE;
 	metadata->last_good_deployment = 0;
-	metadata->boot_once_deployment = FU_SLOT_NONE;
+	metadata->boot_once_deployment = FW_SLOT_NONE;
 	metadata->selected_deployment = 0;
-	metadata->update_state = FU_STATE_CONFIRMED;
+	metadata->update_state = FW_STATE_CONFIRMED;
 	deployment = &metadata->deployment[0];
-	deployment->state = FU_STATE_CONFIRMED;
+	deployment->state = FW_STATE_CONFIRMED;
 	deployment->successful = 1;
-	for (i = 0; i < FU_COMPONENT_COUNT; i++) {
+	for (i = 0; i < FW_COMPONENT_COUNT; i++) {
 		deployment->component[i].slot = slot;
 		deployment->component[i].valid = 1;
 	}
-	metadata->deployment[1].state = FU_STATE_EMPTY;
+	metadata->deployment[1].state = FW_STATE_EMPTY;
 }
 
-static void print_status(const struct fu_disk_metadata *metadata)
+static void print_status(const struct fw_disk_metadata *metadata)
 {
 	unsigned int i, j;
 
 	printf("sequence: %" PRIu32 "\n", le32toh(metadata->sequence));
 	printf("active: %u  pending: ", metadata->active_deployment);
-	if (metadata->pending_deployment == FU_SLOT_NONE)
+	if (metadata->pending_deployment == FW_SLOT_NONE)
 		printf("none");
 	else
 		printf("%u", metadata->pending_deployment);
@@ -274,15 +274,15 @@ static void print_status(const struct fu_disk_metadata *metadata)
 	       metadata->last_good_deployment, metadata->selected_deployment);
 
 	for (i = 0; i < 2; i++) {
-		const struct fu_disk_deployment *deployment =
+		const struct fw_disk_deployment *deployment =
 			&metadata->deployment[i];
 
 		printf("deployment %u: %s successful=%u tries=%u release=%" PRIu32
 		       "\n", i, state_name(deployment->state),
 		       deployment->successful, deployment->tries_remaining,
 		       le32toh(deployment->release_version));
-		for (j = 0; j < FU_COMPONENT_COUNT; j++) {
-			const struct fu_disk_component *component =
+		for (j = 0; j < FW_COMPONENT_COUNT; j++) {
+			const struct fw_disk_component *component =
 				&deployment->component[j];
 
 			printf("  %-10s slot=%c version=%" PRIu32
@@ -318,7 +318,7 @@ static int cmdline_deployment(void)
 	     token = strtok_r(NULL, " \n", &saveptr)) {
 		char extra;
 
-		if (sscanf(token, "fu.deployment=%d%c", &deployment, &extra) == 1)
+		if (sscanf(token, "fw.deployment=%d%c", &deployment, &extra) == 1)
 			break;
 	}
 
@@ -349,8 +349,8 @@ static void usage(const char *program)
 int main(int argc, char **argv)
 {
 	const char *device = "/dev/mmcblk1";
-	uint64_t offsets[2] = { FU_META0_OFFSET, FU_META1_OFFSET };
-	struct fu_disk_metadata metadata;
+	uint64_t offsets[2] = { FW_META0_OFFSET, FW_META1_OFFSET };
+	struct fw_disk_metadata metadata;
 	unsigned int source;
 	const char *command;
 	int arg = 1, deployment, fd, ret;
@@ -380,7 +380,7 @@ int main(int argc, char **argv)
 
 	fd = open(device, O_RDWR | O_CLOEXEC);
 	if (fd < 0) {
-		fprintf(stderr, "fuctl: cannot open %s: %s\n", device,
+		fprintf(stderr, "fwctl: cannot open %s: %s\n", device,
 			strerror(errno));
 		return 1;
 	}
@@ -397,16 +397,16 @@ int main(int argc, char **argv)
 		if (!ret)
 			ret = save_metadata(fd, offsets, &metadata, &source);
 		if (!ret)
-			printf("fuctl: initialized metadata with slot %c active\n",
+			printf("fwctl: initialized metadata with slot %c active\n",
 			       argv[arg][0]);
 		else
-			fprintf(stderr, "fuctl: init failed: %s\n", strerror(-ret));
+			fprintf(stderr, "fwctl: init failed: %s\n", strerror(-ret));
 		close(fd);
 		return ret ? 1 : 0;
 	}
 	ret = load_metadata(fd, offsets, &metadata, &source);
 	if (ret) {
-		fprintf(stderr, "fuctl: metadata unavailable: %s\n",
+		fprintf(stderr, "fwctl: metadata unavailable: %s\n",
 			strerror(-ret));
 		close(fd);
 		return 1;
@@ -433,38 +433,38 @@ int main(int argc, char **argv)
 		}
 		if (metadata.active_deployment == deployment &&
 		    metadata.last_good_deployment == deployment &&
-		    metadata.pending_deployment == FU_SLOT_NONE &&
-		    metadata.deployment[deployment].state == FU_STATE_CONFIRMED &&
+		    metadata.pending_deployment == FW_SLOT_NONE &&
+		    metadata.deployment[deployment].state == FW_STATE_CONFIRMED &&
 		    metadata.deployment[deployment].successful) {
-			printf("fuctl: deployment %d is already confirmed\n",
+			printf("fwctl: deployment %d is already confirmed\n",
 			       deployment);
 			ret = 0;
 			goto out;
 		}
-		metadata.deployment[deployment].state = FU_STATE_CONFIRMED;
+		metadata.deployment[deployment].state = FW_STATE_CONFIRMED;
 		metadata.deployment[deployment].successful = 1;
 		metadata.deployment[deployment].tries_remaining = 0;
 		metadata.active_deployment = deployment;
 		metadata.last_good_deployment = deployment;
 		metadata.selected_deployment = deployment;
-		metadata.pending_deployment = FU_SLOT_NONE;
-		metadata.update_state = FU_STATE_CONFIRMED;
+		metadata.pending_deployment = FW_SLOT_NONE;
+		metadata.update_state = FW_STATE_CONFIRMED;
 	} else if (!strcmp(command, "mark-bad")) {
 		if (arg >= argc || (deployment = parse_deployment(argv[arg++])) < 0 ||
 		    arg != argc) {
 			ret = -EINVAL;
 			goto out;
 		}
-		metadata.deployment[deployment].state = FU_STATE_FAILED;
+		metadata.deployment[deployment].state = FW_STATE_FAILED;
 		metadata.deployment[deployment].successful = 0;
 		metadata.deployment[deployment].tries_remaining = 0;
 		if (metadata.pending_deployment == deployment)
-			metadata.pending_deployment = FU_SLOT_NONE;
+			metadata.pending_deployment = FW_SLOT_NONE;
 		if (metadata.active_deployment == deployment)
 			metadata.active_deployment = metadata.last_good_deployment;
 		if (metadata.selected_deployment == deployment)
 			metadata.selected_deployment = metadata.last_good_deployment;
-		metadata.update_state = FU_STATE_FAILED;
+		metadata.update_state = FW_STATE_FAILED;
 	} else if (!strcmp(command, "rollback")) {
 		deployment = metadata.last_good_deployment;
 		if (arg != argc || deployment > 1 ||
@@ -473,14 +473,14 @@ int main(int argc, char **argv)
 			ret = -ENOENT;
 			goto out;
 		}
-		if (metadata.pending_deployment != FU_SLOT_NONE)
+		if (metadata.pending_deployment != FW_SLOT_NONE)
 			metadata.deployment[metadata.pending_deployment].state =
-				FU_STATE_FAILED;
-		metadata.pending_deployment = FU_SLOT_NONE;
-		metadata.boot_once_deployment = FU_SLOT_NONE;
+				FW_STATE_FAILED;
+		metadata.pending_deployment = FW_SLOT_NONE;
+		metadata.boot_once_deployment = FW_SLOT_NONE;
 		metadata.active_deployment = deployment;
 		metadata.selected_deployment = deployment;
-		metadata.update_state = FU_STATE_CONFIRMED;
+		metadata.update_state = FW_STATE_CONFIRMED;
 	} else {
 		usage(argv[0]);
 		ret = -EINVAL;
@@ -489,12 +489,12 @@ int main(int argc, char **argv)
 
 	ret = save_metadata(fd, offsets, &metadata, &source);
 	if (!ret)
-		printf("fuctl: %s committed to metadata copy %u\n", command,
+		printf("fwctl: %s committed to metadata copy %u\n", command,
 		       source);
 
 out:
 	if (ret)
-		fprintf(stderr, "fuctl: %s failed: %s\n", command,
+		fprintf(stderr, "fwctl: %s failed: %s\n", command,
 			strerror(-ret));
 	close(fd);
 	return ret ? 1 : 0;

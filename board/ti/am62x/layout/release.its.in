@@ -19,19 +19,19 @@
 
 		conf-1 {
 			description = "TI AM62x firmware release";
-			fu,type = "release";
-			fu,product = "ti-am62x";
-			fu,layout-id = "am62x-sd-ab-v1";
-			fu,version = <1>;
-			fu,rollback-index = <0>;
-			fu,components = "bootloader", "kernel", "rootfs";
-			fu,bootloader-file = "release/bootloader.itb";
-			fu,bootloader-sha256 = "@BOOTLOADER_SHA256@";
-			fu,kernel-file = "release/kernel.itb";
-			fu,kernel-sha256 = "@KERNEL_SHA256@";
-			fu,rootfs-file = "release/rootfs.itb";
-			fu,rootfs-sha256 = "@ROOTFS_SHA256@";
-			fu,allow-bootloader;
+			fw,type = "release";
+			fw,product = "ti-am62x";
+			fw,layout-id = "am62x-sd-ab-v1";
+			fw,version = <1>;
+			fw,rollback-index = <0>;
+			fw,components = "bootloader", "kernel", "rootfs";
+			fw,bootloader-file = "bootloader.itb";
+			fw,bootloader-sha256 = "@BOOTLOADER_SHA256@";
+			fw,kernel-file = "kernel.itb";
+			fw,kernel-sha256 = "@KERNEL_SHA256@";
+			fw,rootfs-file = "rootfs.itb";
+			fw,rootfs-sha256 = "@ROOTFS_SHA256@";
+			fw,allow-bootloader;
 			firmware = "manifest";
 		};
 	};

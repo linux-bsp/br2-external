@@ -36,11 +36,11 @@
 		default = "conf-1";
 		conf-1 {
 			description = "TI AM62x bootloader update";
-			fu,type = "bootloader";
-			fu,product = "ti-am62x";
-			fu,layout-id = "am62x-sd-ab-v1";
-			fu,version = <1>;
-			fu,rollback-index = <0>;
+			fw,type = "bootloader";
+			fw,product = "ti-am62x";
+			fw,layout-id = "am62x-sd-ab-v1";
+			fw,version = <1>;
+			fw,rollback-index = <0>;
 			firmware = "tiboot3";
 			loadables = "tispl", "uboot";
 		};

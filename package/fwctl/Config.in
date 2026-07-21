@@ -1,5 +1,5 @@
-config BR2_PACKAGE_FUCTL
-	bool "fuctl"
+config BR2_PACKAGE_FWCTL
+	bool "fwctl"
 	depends on BR2_USE_MMU
 	help
 	  Install the userspace control utility for the RAW A/B firmware
