@@ -29,6 +29,16 @@ ifeq ($(BR2_PACKAGE_PAF_TB_MQTT_PUB),y)
 PAF_DEPENDENCIES += mosquitto
 endif
 
+ifeq ($(BR2_PACKAGE_PAF_FWCTL),y)
+PAF_DEPENDENCIES += dtc libcurl openssl
+PAF_LICENSE += , GPL-2.0+
+PAF_LICENSE_FILES += apps/fwctl/LICENSE
+endif
+
+ifeq ($(BR2_PACKAGE_PAF_FWCTL_FIT_SIGNATURE),y)
+PAF_DEPENDENCIES += uboot-tools
+endif
+
 # Local override builds must not sync stale Kbuild products from the PAF
 # workspace into Buildroot. Linux refuses external modules when modules.order
 # exists in the module source tree.

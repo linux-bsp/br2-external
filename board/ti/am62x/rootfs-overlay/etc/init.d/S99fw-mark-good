@@ -12,9 +12,7 @@ case "$1" in
 			exit 1
 		fi
 		if /usr/sbin/fwctl \
-			--device "${FWCTL_DEVICE:-/dev/mmcblk1}" \
-			--meta0 "${FWCTL_META0:-0x00500000}" \
-			--meta1 "${FWCTL_META1:-0x00510000}" \
+			--config "${FWCTL_CONFIG:-/etc/fwctl.conf}" \
 			mark-good; then
 			echo "fwctl: current deployment marked good"
 		else

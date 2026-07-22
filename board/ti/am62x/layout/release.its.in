@@ -6,7 +6,7 @@
 	images {
 		manifest {
 			description = "TI AM62x release manifest";
-			data = "kernel and rootfs release";
+			data = "TI AM62x OTA kernel and rootfs release";
 			type = "firmware";
 			arch = "arm64";
 			compression = "none";
@@ -24,14 +24,11 @@
 			fw,layout-id = "am62x-sd-ab-v1";
 			fw,version = <1>;
 			fw,rollback-index = <0>;
-			fw,components = "bootloader", "kernel", "rootfs";
-			fw,bootloader-file = "bootloader.itb";
-			fw,bootloader-sha256 = "@BOOTLOADER_SHA256@";
+			fw,components = "kernel", "rootfs";
 			fw,kernel-file = "kernel.itb";
 			fw,kernel-sha256 = "@KERNEL_SHA256@";
 			fw,rootfs-file = "rootfs.itb";
 			fw,rootfs-sha256 = "@ROOTFS_SHA256@";
-			fw,allow-bootloader;
 			firmware = "manifest";
 		};
 	};

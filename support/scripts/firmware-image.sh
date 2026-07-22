@@ -53,13 +53,11 @@ PATH="${HOST_DIR}/bin:${PATH}" GENIMAGE_MKIMAGE="${MKIMAGE}" support/scripts/gen
 
 if [ -f "${RELEASE_TEMPLATE}" ]; then
 	command -v sha256sum >/dev/null 2>&1 || die "sha256sum is not available"
-	BOOTLOADER_SHA256="$(sha256sum "${BINARIES_DIR}/release/bootloader.itb" | cut -d ' ' -f 1)"
 	KERNEL_SHA256="$(sha256sum "${BINARIES_DIR}/release/kernel.itb" | cut -d ' ' -f 1)"
 	ROOTFS_SHA256="$(sha256sum "${BINARIES_DIR}/release/rootfs.itb" | cut -d ' ' -f 1)"
 	RELEASE_ITS="${BINARIES_DIR}/release/release.its"
 
-	sed -e "s/@BOOTLOADER_SHA256@/${BOOTLOADER_SHA256}/g" \
-	    -e "s/@KERNEL_SHA256@/${KERNEL_SHA256}/g" \
+	sed -e "s/@KERNEL_SHA256@/${KERNEL_SHA256}/g" \
 	    -e "s/@ROOTFS_SHA256@/${ROOTFS_SHA256}/g" \
 	    "${RELEASE_TEMPLATE}" >"${RELEASE_ITS}"
 	if ! "${MKIMAGE}" -f "${RELEASE_ITS}" \
