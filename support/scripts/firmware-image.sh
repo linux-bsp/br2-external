@@ -40,13 +40,15 @@ if [ -z "${FW_DTB_FILE:-}" ] && [ -n "${BR2_CONFIG:-}" ]; then
 fi
 
 ITS_LIST="$(sed -n "s#^[[:space:]]*its[[:space:]]*=[[:space:]]*\"\([^\"]*\)\".*#\1#p" "${GENIMAGE_CFG}" | sort -u)"
+FW_BUILD_TIME_MINUTES="$(($(date +%s) / 60))"
 
 for ITS_PATH in ${ITS_LIST}; do
 	ITS_SOURCE="${CONFIG_DIR}/$(basename -- "${ITS_PATH}")"
 	ITS_OUTPUT="${BINARIES_DIR}/${ITS_PATH}"
 	[ -f "${ITS_SOURCE}" ] || die "missing ITS file: ${ITS_SOURCE}"
 	mkdir -p "$(dirname -- "${ITS_OUTPUT}")"
-	cp "${ITS_SOURCE}" "${ITS_OUTPUT}"
+	sed "s/@FW_BUILD_TIME_MINUTES@/${FW_BUILD_TIME_MINUTES}/g" \
+		"${ITS_SOURCE}" >"${ITS_OUTPUT}"
 done
 
 PATH="${HOST_DIR}/bin:${PATH}" GENIMAGE_MKIMAGE="${MKIMAGE}" support/scripts/genimage.sh -c "${GENIMAGE_CFG}"

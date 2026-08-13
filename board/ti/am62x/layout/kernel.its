@@ -33,6 +33,7 @@
 			fw,layout-id = "am62x-sd-ab-v1";
 			fw,version = <1>;
 			fw,rollback-index = <0>;
+			fw,build-time-minutes = <@FW_BUILD_TIME_MINUTES@>;
 			kernel = "kernel";
 			fdt = "fdt";
 		};
