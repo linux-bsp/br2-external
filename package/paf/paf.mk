@@ -39,10 +39,12 @@ ifeq ($(BR2_PACKAGE_PAF_PDI_FW_FIT_SIGNATURE),y)
 PAF_DEPENDENCIES += uboot-tools
 endif
 
-# Local override builds must not sync stale Kbuild products from the PAF
-# workspace into Buildroot. Linux refuses external modules when modules.order
-# exists in the module source tree.
+# Local override builds must not sync generated build directories or stale
+# Kbuild products from the PAF workspace into Buildroot. Linux refuses external
+# modules when modules.order exists in the module source tree.
 PAF_OVERRIDE_SRCDIR_RSYNC_EXCLUSIONS = \
+	--exclude='.build' \
+	--exclude='_build' \
 	--exclude='*.o' \
 	--exclude='*.o.d' \
 	--exclude='*.ko' \
