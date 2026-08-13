@@ -29,13 +29,13 @@ ifeq ($(BR2_PACKAGE_PAF_TB_MQTT_PUB),y)
 PAF_DEPENDENCIES += mosquitto
 endif
 
-ifeq ($(BR2_PACKAGE_PAF_FWCTL),y)
+ifeq ($(BR2_PACKAGE_PAF_PDI_FW),y)
 PAF_DEPENDENCIES += dtc libcurl openssl
 PAF_LICENSE += , GPL-2.0+
 PAF_LICENSE_FILES += apps/fwctl/LICENSE
 endif
 
-ifeq ($(BR2_PACKAGE_PAF_FWCTL_FIT_SIGNATURE),y)
+ifeq ($(BR2_PACKAGE_PAF_PDI_FW_FIT_SIGNATURE),y)
 PAF_DEPENDENCIES += uboot-tools
 endif
 
