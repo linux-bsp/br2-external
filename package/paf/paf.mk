@@ -61,9 +61,9 @@ PAF_KCONFIG_DEFCONFIG = $(call qstrip,$(BR2_PACKAGE_PAF_DEFCONFIG))
 # Build type from Buildroot configuration
 PAF_BUILD_TYPE = $(call qstrip,$(BR2_PACKAGE_PAF_BUILD_TYPE))
 
-# Build in-tree for Buildroot (output/build/paf/_build)
-PAF_BUILD_OUTPUT = $(@D)/_build
-PAF_MODULES_OUTPUT = $(@D)/_build/modules
+# Build in-tree for Buildroot (output/build/paf/.build)
+PAF_BUILD_OUTPUT = $(@D)/.build
+PAF_MODULES_OUTPUT = $(@D)/.build/modules
 PAF_MODULE_EXTRA_DIR = extra/pdm
 
 PAF_MAKE_OPTS = \
