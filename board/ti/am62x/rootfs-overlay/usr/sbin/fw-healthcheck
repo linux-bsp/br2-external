@@ -1,0 +1,47 @@
+#!/bin/sh
+
+[ -r /etc/default/fw-health ] && . /etc/default/fw-health
+
+fail()
+{
+	echo "fw-healthcheck: $*" >&2
+	exit 1
+}
+
+boot_failures=${FW_HEALTH_BOOT_FAILURES:-/run/rcS.failed}
+if [ -s "$boot_failures" ]; then
+	fail "a boot service failed: $(cat "$boot_failures")"
+fi
+
+for marker in ${FW_HEALTH_FAILURE_MARKERS:-}; do
+	[ ! -e "$marker" ] || fail "failure marker is active: $marker"
+done
+
+for entry in ${FW_HEALTH_REQUIRED_PIDFILES:-}; do
+	name=${entry%%:*}
+	pidfile=${entry#*:}
+	[ -r "$pidfile" ] || fail "$name pid file is missing"
+	pid=$(cat "$pidfile" 2>/dev/null)
+	case "$pid" in
+		''|*[!0-9]*) fail "$name pid file is invalid" ;;
+	esac
+	kill -0 "$pid" 2>/dev/null || fail "$name is not running"
+done
+
+for executable in ${FW_HEALTH_REQUIRED_EXECUTABLES:-}; do
+	[ -x "$executable" ] || fail "$executable is not executable"
+done
+
+for directory in ${FW_HEALTH_REQUIRED_DIRS:-}; do
+	[ -d "$directory" ] || fail "$directory is not available"
+done
+
+for device in ${FW_HEALTH_REQUIRED_CHAR_DEVICES:-}; do
+	[ -c "$device" ] || fail "$device is not a character device"
+done
+
+fwctl_config=${FW_HEALTH_FWCTL_CONFIG:-/etc/fwctl.conf}
+/usr/sbin/fwctl --config "$fwctl_config" status >/dev/null 2>&1 ||
+	fail "fwctl status failed"
+
+exit 0

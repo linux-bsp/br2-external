@@ -455,7 +455,7 @@ CONFIG_GPIOLIB=y
 # CONFIG_EFIVAR_FS is not set
 
 #
-# Enable CAN Driver
+# PDM main MCU heartbeat over AM62x main MCAN0 (CAN FD)
 #
 CONFIG_CAN=y
 CONFIG_CAN_RAW=y

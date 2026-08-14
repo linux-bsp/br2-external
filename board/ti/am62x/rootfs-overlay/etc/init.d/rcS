@@ -1,0 +1,39 @@
+#!/bin/sh
+
+BOOT_FAILURES=/run/rcS.failed
+BOOT_COMPLETE=/run/rcS.complete
+
+echo "=== Starting rcS ==="
+
+mkdir -p /run
+rm -f "$BOOT_FAILURES" "$BOOT_COMPLETE"
+
+for script in /etc/init.d/S??*; do
+	[ -f "$script" ] || continue
+
+	case "$script" in
+		*.sh)
+			(trap - INT QUIT TSTP; set start; . "$script")
+			status=$?
+			;;
+		*)
+			"$script" start
+			status=$?
+			;;
+	esac
+
+	if [ "$status" -ne 0 ]; then
+		name=${script##*/}
+		echo "rcS: $name failed with status $status" >&2
+		printf '%s:%s\n' "$name" "$status" >> "$BOOT_FAILURES"
+	fi
+done
+
+touch "$BOOT_COMPLETE"
+if [ -s "$BOOT_FAILURES" ]; then
+	echo "=== rcS complete with service failures ==="
+else
+	echo "=== rcS complete ==="
+fi
+
+exit 0

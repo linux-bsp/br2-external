@@ -1,0 +1,128 @@
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+MODULE=pdm
+SYS_MODULE=/sys/module/$MODULE
+MANAGER_DEVICE=/dev/pdm_manager
+
+[ -r /etc/default/pdm ] && . /etc/default/pdm
+
+PDM_CAN_IFACE=${PDM_CAN_IFACE:-can0}
+PDM_CAN_BITRATE=${PDM_CAN_BITRATE:-500000}
+PDM_CAN_DBITRATE=${PDM_CAN_DBITRATE:-2000000}
+PDM_CAN_RESTART_MS=${PDM_CAN_RESTART_MS:-100}
+PDM_IP=${PDM_IP:-/sbin/ip}
+
+module_loaded()
+{
+	[ -d "$SYS_MODULE" ]
+}
+
+manager_ready()
+{
+	[ -c "$MANAGER_DEVICE" ]
+}
+
+configure_can()
+{
+	if [ ! -d "/sys/class/net/$PDM_CAN_IFACE" ]; then
+		echo "PDM: CAN interface $PDM_CAN_IFACE is not registered" >&2
+		return 1
+	fi
+	if [ ! -x "$PDM_IP" ]; then
+		echo "PDM: $PDM_IP is missing or not executable" >&2
+		return 1
+	fi
+
+	"$PDM_IP" link set dev "$PDM_CAN_IFACE" down 2>/dev/null || true
+	if ! "$PDM_IP" link set dev "$PDM_CAN_IFACE" type can \
+		bitrate "$PDM_CAN_BITRATE" \
+		dbitrate "$PDM_CAN_DBITRATE" \
+		fd on restart-ms "$PDM_CAN_RESTART_MS"; then
+		echo "PDM: failed to set CAN FD on $PDM_CAN_IFACE" >&2
+		"$PDM_IP" -details link show dev "$PDM_CAN_IFACE" >&2 || true
+		return 1
+	fi
+	if ! "$PDM_IP" link set dev "$PDM_CAN_IFACE" up; then
+		echo "PDM: failed to bring $PDM_CAN_IFACE up" >&2
+		return 1
+	fi
+}
+
+start()
+{
+	printf 'Starting PDM: '
+
+	# Bring CAN up before pdm starts its asynchronous receive thread.
+	if ! configure_can; then
+		echo "FAIL (failed to configure $PDM_CAN_IFACE for CAN FD)"
+		return 1
+	fi
+
+	if ! module_loaded && ! modprobe "$MODULE"; then
+		echo "FAIL (modprobe $MODULE failed)"
+		return 1
+	fi
+
+	if ! module_loaded; then
+		echo "FAIL ($SYS_MODULE is missing)"
+		return 1
+	fi
+
+	# Allow a userspace device manager a short time to create the node.
+	for attempt in 1 2 3; do
+		if manager_ready; then
+			echo "OK"
+			return 0
+		fi
+		sleep 1
+	done
+
+	echo "FAIL ($MANAGER_DEVICE is missing)"
+	return 1
+}
+
+stop()
+{
+	printf 'Stopping PDM: '
+
+	if module_loaded && ! modprobe -r "$MODULE"; then
+		echo "FAIL"
+		return 1
+	fi
+	"$PDM_IP" link set dev "$PDM_CAN_IFACE" down 2>/dev/null || true
+
+	echo "OK"
+}
+
+status()
+{
+	if module_loaded && manager_ready; then
+		echo "PDM: loaded, $MANAGER_DEVICE ready"
+		return 0
+	fi
+
+	module_loaded && echo "PDM: loaded, $MANAGER_DEVICE missing" || \
+		echo "PDM: not loaded"
+	return 3
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		stop && start
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload|status}" >&2
+		exit 2
+		;;
+esac

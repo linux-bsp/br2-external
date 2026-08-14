@@ -1,0 +1,7 @@
+FW_HEALTH_BOOT_FAILURES=/run/rcS.failed
+FW_HEALTH_REQUIRED_PIDFILES="pwatchdogd:/var/run/pwatchdogd.pid dropbear:/var/run/dropbear.pid"
+FW_HEALTH_REQUIRED_EXECUTABLES="/usr/bin/pwatchdogd /usr/sbin/fwctl"
+FW_HEALTH_REQUIRED_DIRS="/sys/module/pdm /sys/class/net/can0"
+FW_HEALTH_REQUIRED_CHAR_DEVICES="/dev/watchdog0 /dev/pdm_manager"
+FW_HEALTH_FAILURE_MARKERS="/run/fw-rollback-test.active"
+FW_HEALTH_FWCTL_CONFIG=/etc/fwctl.conf
