@@ -25,10 +25,6 @@ ifeq ($(BR2_PACKAGE_PAF_PDI_BMC_IPMI),y)
 PAF_DEPENDENCIES += freeipmi
 endif
 
-ifeq ($(BR2_PACKAGE_PAF_TB_MQTT_PUB),y)
-PAF_DEPENDENCIES += mosquitto
-endif
-
 ifeq ($(BR2_PACKAGE_PAF_PDI_FW),y)
 PAF_DEPENDENCIES += dtc libcurl openssl
 PAF_LICENSE += , GPL-2.0+
