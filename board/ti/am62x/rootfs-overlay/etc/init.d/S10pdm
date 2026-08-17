@@ -8,7 +8,7 @@ MANAGER_DEVICE=/dev/pdm_manager
 
 [ -r /etc/default/pdm ] && . /etc/default/pdm
 
-PDM_CAN_IFACE=${PDM_CAN_IFACE:-can0}
+PDM_CAN_IFACES=${PDM_CAN_IFACES:-"can0 can1"}
 PDM_CAN_BITRATE=${PDM_CAN_BITRATE:-500000}
 PDM_CAN_DBITRATE=${PDM_CAN_DBITRATE:-2000000}
 PDM_CAN_RESTART_MS=${PDM_CAN_RESTART_MS:-100}
@@ -26,8 +26,9 @@ manager_ready()
 
 configure_can()
 {
-	if [ ! -d "/sys/class/net/$PDM_CAN_IFACE" ]; then
-		echo "PDM: CAN interface $PDM_CAN_IFACE is not registered" >&2
+	can_iface=$1
+	if [ ! -d "/sys/class/net/$can_iface" ]; then
+		echo "PDM: CAN interface $can_iface is not registered" >&2
 		return 1
 	fi
 	if [ ! -x "$PDM_IP" ]; then
@@ -35,17 +36,17 @@ configure_can()
 		return 1
 	fi
 
-	"$PDM_IP" link set dev "$PDM_CAN_IFACE" down 2>/dev/null || true
-	if ! "$PDM_IP" link set dev "$PDM_CAN_IFACE" type can \
+	"$PDM_IP" link set dev "$can_iface" down 2>/dev/null || true
+	if ! "$PDM_IP" link set dev "$can_iface" type can \
 		bitrate "$PDM_CAN_BITRATE" \
 		dbitrate "$PDM_CAN_DBITRATE" \
 		fd on restart-ms "$PDM_CAN_RESTART_MS"; then
-		echo "PDM: failed to set CAN FD on $PDM_CAN_IFACE" >&2
-		"$PDM_IP" -details link show dev "$PDM_CAN_IFACE" >&2 || true
+		echo "PDM: failed to set CAN FD on $can_iface" >&2
+		"$PDM_IP" -details link show dev "$can_iface" >&2 || true
 		return 1
 	fi
-	if ! "$PDM_IP" link set dev "$PDM_CAN_IFACE" up; then
-		echo "PDM: failed to bring $PDM_CAN_IFACE up" >&2
+	if ! "$PDM_IP" link set dev "$can_iface" up; then
+		echo "PDM: failed to bring $can_iface up" >&2
 		return 1
 	fi
 }
@@ -54,11 +55,13 @@ start()
 {
 	printf 'Starting PDM: '
 
-	# Bring CAN up before pdm starts its asynchronous receive thread.
-	if ! configure_can; then
-		echo "FAIL (failed to configure $PDM_CAN_IFACE for CAN FD)"
-		return 1
-	fi
+	# Bring both CAN links up before pdm starts its receive threads.
+	for can_iface in $PDM_CAN_IFACES; do
+		if ! configure_can "$can_iface"; then
+			echo "FAIL (failed to configure $can_iface for CAN FD)"
+			return 1
+		fi
+	done
 
 	if ! module_loaded && ! modprobe "$MODULE"; then
 		echo "FAIL (modprobe $MODULE failed)"
@@ -91,7 +94,9 @@ stop()
 		echo "FAIL"
 		return 1
 	fi
-	"$PDM_IP" link set dev "$PDM_CAN_IFACE" down 2>/dev/null || true
+	for can_iface in $PDM_CAN_IFACES; do
+		"$PDM_IP" link set dev "$can_iface" down 2>/dev/null || true
+	done
 
 	echo "OK"
 }
