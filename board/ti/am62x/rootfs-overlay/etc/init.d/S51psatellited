@@ -1,9 +1,9 @@
 #!/bin/sh
 
-DAEMON=/usr/bin/ptelemetryd
-CONFIG=/etc/paf/ptelemetryd.conf
-PIDFILE=/run/ptelemetryd.pid
-OUTPUT=/var/log/ptelemetryd-service.log
+DAEMON=/usr/bin/psatellited
+CONFIG=/etc/paf/psatellited.conf
+PIDFILE=/run/psatellited.pid
+OUTPUT=/var/log/psatellited-service.log
 
 running()
 {
@@ -17,12 +17,7 @@ running()
 
 start()
 {
-	printf 'Starting ptelemetryd: '
-	if grep -Eq '^[[:space:]]*enabled[[:space:]]*=[[:space:]]*false([[:space:]]*#.*)?$' "$CONFIG" 2>/dev/null; then
-		rm -f "$PIDFILE"
-		echo "DISABLED"
-		return 0
-	fi
+	printf 'Starting psatellited: '
 	if [ ! -x "$DAEMON" ]; then
 		echo "SKIP (not installed)"
 		return 0
@@ -44,7 +39,7 @@ start()
 
 stop()
 {
-	printf 'Stopping ptelemetryd: '
+	printf 'Stopping psatellited: '
 	if running; then
 		pid=$(cat "$PIDFILE")
 		kill "$pid" 2>/dev/null || true
@@ -67,9 +62,9 @@ case "$1" in
 	restart|reload) stop && start ;;
 	status)
 		if running; then
-			echo "ptelemetryd: running pid $(cat "$PIDFILE")"
+			echo "psatellited: running pid $(cat "$PIDFILE")"
 		else
-			echo "ptelemetryd: stopped"
+			echo "psatellited: stopped"
 			exit 3
 		fi
 		;;
