@@ -2,6 +2,7 @@
 
 DAEMON=/usr/bin/pwatchdogd
 PIDFILE=/var/run/pwatchdogd.pid
+STOP_TIMEOUT=5
 
 [ -r /etc/default/pwatchdogd ] && . /etc/default/pwatchdogd
 
@@ -38,7 +39,7 @@ start()
 	status=$?
 	if [ "$status" -eq 0 ]; then
 		# start-stop-daemon only confirms that the child was forked. Check
-		# that it survives initialization so a missing PDM device is fatal.
+		# that it survives local watchdog initialization.
 		sleep 1
 		if running; then
 			echo "OK"
@@ -56,15 +57,31 @@ start()
 stop()
 {
 	printf 'Stopping pwatchdogd: '
+	was_running=0
 	if running; then
+		was_running=1
+		pid=$(cat "$PIDFILE")
 		start-stop-daemon -K -q -p "$PIDFILE" -x "$DAEMON"
 		status=$?
+		count=0
+		while kill -0 "$pid" 2>/dev/null && [ "$count" -lt "$STOP_TIMEOUT" ]; do
+			sleep 1
+			count=$((count + 1))
+		done
+		if kill -0 "$pid" 2>/dev/null; then
+			echo "FAIL (process did not exit)"
+			return 1
+		fi
 	else
 		status=0
 	fi
 	rm -f "$PIDFILE"
 	if [ "$status" -eq 0 ]; then
-		echo "OK"
+		if [ "$was_running" -eq 1 ]; then
+			echo "OK (feeding stopped; hardware watchdog remains active)"
+		else
+			echo "OK (already stopped)"
+		fi
 	else
 		echo "FAIL"
 	fi
@@ -79,8 +96,7 @@ case "$1" in
 		stop
 		;;
 	restart|reload)
-		stop
-		start
+		stop && start
 		;;
 	status)
 		if running; then

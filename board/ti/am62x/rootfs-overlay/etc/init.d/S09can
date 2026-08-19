@@ -1,0 +1,109 @@
+#!/bin/sh
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+[ -r /etc/default/can ] && . /etc/default/can
+
+CAN_INTERFACES=${CAN_INTERFACES:-"can0 can1"}
+CAN_BITRATE=${CAN_BITRATE:-500000}
+CAN_DATA_BITRATE=${CAN_DATA_BITRATE:-2000000}
+CAN_RESTART_MS=${CAN_RESTART_MS:-100}
+CAN_IP=${CAN_IP:-/sbin/ip}
+
+interface_present()
+{
+	[ -d "/sys/class/net/$1" ]
+}
+
+interface_up()
+{
+	flags=$(cat "/sys/class/net/$1/flags" 2>/dev/null) || return 1
+	[ $((flags & 1)) -ne 0 ]
+}
+
+configure_interface()
+{
+	can_iface=$1
+
+	if ! interface_present "$can_iface"; then
+		echo "CAN: interface $can_iface is not registered" >&2
+		return 1
+	fi
+	if [ ! -x "$CAN_IP" ]; then
+		echo "CAN: $CAN_IP is missing or not executable" >&2
+		return 1
+	fi
+
+	"$CAN_IP" link set dev "$can_iface" down 2>/dev/null || true
+	if ! "$CAN_IP" link set dev "$can_iface" type can \
+		bitrate "$CAN_BITRATE" \
+		dbitrate "$CAN_DATA_BITRATE" \
+		fd on restart-ms "$CAN_RESTART_MS"; then
+		echo "CAN: failed to configure CAN FD on $can_iface" >&2
+		"$CAN_IP" -details link show dev "$can_iface" >&2 || true
+		return 1
+	fi
+	if ! "$CAN_IP" link set dev "$can_iface" up; then
+		echo "CAN: failed to bring $can_iface up" >&2
+		return 1
+	fi
+}
+
+start()
+{
+	printf 'Starting CAN: '
+	for can_iface in $CAN_INTERFACES; do
+		if ! configure_interface "$can_iface"; then
+			echo "FAIL"
+			return 1
+		fi
+	done
+	echo "OK"
+}
+
+stop()
+{
+	printf 'Stopping CAN: '
+	for can_iface in $CAN_INTERFACES; do
+		interface_present "$can_iface" || continue
+		"$CAN_IP" link set dev "$can_iface" down 2>/dev/null || true
+	done
+	echo "OK"
+}
+
+status()
+{
+	status=0
+
+	for can_iface in $CAN_INTERFACES; do
+		if ! interface_present "$can_iface"; then
+			echo "CAN: $can_iface is not registered"
+			status=1
+		elif ! interface_up "$can_iface"; then
+			echo "CAN: $can_iface is down"
+			status=1
+		else
+			echo "CAN: $can_iface is up"
+		fi
+	done
+	return "$status"
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|reload)
+		stop && start
+		;;
+	status)
+		status
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|reload|status}" >&2
+		exit 2
+		;;
+esac
