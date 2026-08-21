@@ -1,7 +1,6 @@
 #!/bin/sh
 
 DAEMON=/usr/bin/ptelemetryd
-CONFIG=/etc/paf/ptelemetryd.conf
 PIDFILE=/run/ptelemetryd.pid
 OUTPUT=/var/log/ptelemetryd-service.log
 
@@ -18,7 +17,7 @@ running()
 start()
 {
 	printf 'Starting ptelemetryd: '
-	if grep -Eq '^[[:space:]]*enabled[[:space:]]*=[[:space:]]*false([[:space:]]*#.*)?$' "$CONFIG" 2>/dev/null; then
+	if grep -Eq '^[[:space:]]*enabled[[:space:]]*=[[:space:]]*false([[:space:]]*#.*)?$' /etc/paf/ptelemetryd.conf 2>/dev/null; then
 		rm -f "$PIDFILE"
 		echo "DISABLED"
 		return 0
@@ -32,7 +31,7 @@ start()
 		return 0
 	fi
 	rm -f "$PIDFILE"
-	"$DAEMON" -c "$CONFIG" >"$OUTPUT" 2>&1 &
+	"$DAEMON" >"$OUTPUT" 2>&1 &
 	pid=$!
 	if ! printf '%s\n' "$pid" >"$PIDFILE" || ! kill -0 "$pid" 2>/dev/null; then
 		rm -f "$PIDFILE"

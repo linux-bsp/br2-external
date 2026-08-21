@@ -1,7 +1,6 @@
 #!/bin/sh
 
 DAEMON=/usr/bin/psatellited
-CONFIG=/etc/paf/psatellited.conf
 PIDFILE=/run/psatellited.pid
 OUTPUT=/var/log/psatellited-service.log
 
@@ -27,7 +26,7 @@ start()
 		return 0
 	fi
 	rm -f "$PIDFILE"
-	"$DAEMON" -c "$CONFIG" >"$OUTPUT" 2>&1 &
+	"$DAEMON" >"$OUTPUT" 2>&1 &
 	pid=$!
 	if ! printf '%s\n' "$pid" >"$PIDFILE" || ! kill -0 "$pid" 2>/dev/null; then
 		rm -f "$PIDFILE"
