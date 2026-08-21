@@ -2,13 +2,12 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
-PWATCHDOGD_SERVICE=/etc/init.d/S98pwatchdogd
+SYSTEM_MANAGER_SERVICE=/etc/init.d/S49system_manager
 DEBUG_MODE_MARKER=/run/debugctl.active
 
 # Start order. Debug mode stops the same services in reverse order.
 MANAGED_SERVICES="
 /etc/init.d/S10pdm
-/etc/init.d/S49system_manager
 /etc/init.d/S50ptelemetryd
 /etc/init.d/S51psatellited
 "
@@ -61,7 +60,7 @@ enter_debug_mode()
 	fi
 
 	# K3 RTI is nowayout; keep its feeder alive while health gating is bypassed.
-	if ! run_service "$PWATCHDOGD_SERVICE" start; then
+	if ! run_service "$SYSTEM_MANAGER_SERVICE" start; then
 		rm -f "$DEBUG_MODE_MARKER"
 		return 1
 	fi
@@ -71,7 +70,7 @@ enter_debug_mode()
 
 exit_debug_mode()
 {
-	run_service "$PWATCHDOGD_SERVICE" start || return 1
+	run_service "$SYSTEM_MANAGER_SERVICE" start || return 1
 	start_services || return 1
 
 	if ! /usr/sbin/fwctl health-check; then
@@ -94,7 +93,7 @@ status_mode()
 	for service in $MANAGED_SERVICES; do
 		run_service "$service" status || true
 	done
-	run_service "$PWATCHDOGD_SERVICE" status || true
+	run_service "$SYSTEM_MANAGER_SERVICE" status || true
 }
 
 usage()
