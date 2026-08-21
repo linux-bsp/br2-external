@@ -28,7 +28,7 @@ endif
 ifeq ($(BR2_PACKAGE_PAF_PDI_FW),y)
 PAF_DEPENDENCIES += dtc libcurl openssl
 PAF_LICENSE += , GPL-2.0+
-PAF_LICENSE_FILES += apps/fwctl/LICENSE
+PAF_LICENSE_FILES += LICENSE.GPL-2.0
 endif
 
 ifeq ($(BR2_PACKAGE_PAF_PDI_FW_FIT_SIGNATURE),y)
