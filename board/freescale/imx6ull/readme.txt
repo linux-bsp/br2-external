@@ -83,6 +83,11 @@ The rootfs overlay starts PDM through `/etc/init.d/S03pdm`. On the board, use:
   pdebug discovery list
   module-test.sh
 
+The i.MX6ULL debug profile does not enable `system_manager` or install a
+userspace watchdog supervisor. The kernel watchdog driver remains available
+for board-specific testing, but no init script opens `/dev/watchdog0`; this
+avoids referencing a watchdog service that is not built in this profile.
+
 `module-test.sh` loads `pdm.ko`, prints manager discovery information, and runs
 `pdi_claim_test` for MCU/LED devices that expose a shared ioctl endpoint.
 
