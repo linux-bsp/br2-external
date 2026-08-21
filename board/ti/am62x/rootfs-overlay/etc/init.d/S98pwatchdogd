@@ -4,8 +4,6 @@ DAEMON=/usr/bin/pwatchdogd
 PIDFILE=/var/run/pwatchdogd.pid
 STOP_TIMEOUT=5
 
-[ -r /etc/default/pwatchdogd ] && . /etc/default/pwatchdogd
-
 running()
 {
 	[ -r "$PIDFILE" ] || return 1
@@ -26,16 +24,8 @@ start()
 	fi
 
 	printf 'Starting pwatchdogd: '
-	if [ -n "${PWATCHDOGD_HEALTHCHECK:-}" ]; then
-		start-stop-daemon -S -q -b -m \
-			-O "${PWATCHDOGD_OUTPUT:-/dev/console}" \
-			-p "$PIDFILE" -x "$DAEMON" -- \
-			--health-check "$PWATCHDOGD_HEALTHCHECK"
-	else
-		start-stop-daemon -S -q -b -m \
-			-O "${PWATCHDOGD_OUTPUT:-/dev/console}" \
-			-p "$PIDFILE" -x "$DAEMON"
-	fi
+	start-stop-daemon -S -q -b -m \
+		-O /dev/console -p "$PIDFILE" -x "$DAEMON"
 	status=$?
 	if [ "$status" -eq 0 ]; then
 		# start-stop-daemon only confirms that the child was forked. Check

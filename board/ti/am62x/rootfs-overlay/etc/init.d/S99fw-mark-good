@@ -7,13 +7,13 @@ OUTPUT=${FWCTL_MARK_GOOD_OUTPUT:-/dev/console}
 
 health_check()
 {
-	[ -z "${FWCTL_HEALTHCHECK:-}" ] || sh -c "$FWCTL_HEALTHCHECK"
+	/usr/sbin/fwctl health-check
 }
 
 wait_until_stable()
 {
-	checks=${FWCTL_HEALTH_CHECKS:-1}
-	interval=${FWCTL_HEALTH_INTERVAL_SEC:-0}
+	checks=6
+	interval=5
 	count=0
 
 	while [ "$count" -lt "$checks" ]; do

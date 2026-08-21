@@ -3,7 +3,6 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 
 PWATCHDOGD_SERVICE=/etc/init.d/S98pwatchdogd
-HEALTHCHECK=/usr/sbin/fw-healthcheck
 DEBUG_MODE_MARKER=/run/debugctl.active
 
 # Start order. Debug mode stops the same services in reverse order.
@@ -74,11 +73,7 @@ exit_debug_mode()
 	run_service "$PWATCHDOGD_SERVICE" start || return 1
 	start_services || return 1
 
-	if [ ! -x "$HEALTHCHECK" ]; then
-		echo "debugctl: health check is missing or not executable: $HEALTHCHECK" >&2
-		return 1
-	fi
-	if ! "$HEALTHCHECK"; then
+	if ! /usr/sbin/fwctl health-check; then
 		echo "debugctl: services restored but health check failed" >&2
 		return 1
 	fi

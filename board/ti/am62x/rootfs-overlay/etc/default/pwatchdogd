@@ -1,2 +1,0 @@
-PWATCHDOGD_HEALTHCHECK=/usr/sbin/fw-healthcheck-quiet
-PWATCHDOGD_OUTPUT=/dev/console
