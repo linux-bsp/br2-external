@@ -8,3 +8,4 @@ LINUX_OVERRIDE_SRCDIR = $(TOPDIR)/../linux/linux-7.0
 
 # PAF local source used when BR2_PACKAGE_PAF is enabled.
 PAF_OVERRIDE_SRCDIR = $(TOPDIR)/../paf
+SYSTOOLS_OVERRIDE_SRCDIR = $(TOPDIR)/../systools
