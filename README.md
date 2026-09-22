@@ -13,7 +13,7 @@ Existing i.MX6ULL EVK support is one board configuration in this external tree.
 - `configs/imx6ullevk_defconfig` for the NXP i.MX6ULL EVK
 - `configs/imx6ullevk_debug_study_defconfig` for the i.MX6ULL EVK debug/study profile
 - `board/freescale/imx6ull-evk/` for i.MX6ULL EVK board files
-- `package/paf/` for PAF integration
+- `package/em/` for EM integration
 
 ## Build
 
@@ -34,7 +34,7 @@ workspace:
 
 - `../linux/linux-7.0`
 - `../uboot/uboot-2024.10`
-- `../paf`
+- `../em`
 
 ## Adding Board Support
 

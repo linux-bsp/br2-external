@@ -62,14 +62,14 @@ To boot your newly created system:
 - power on the board.
 
 
-PAF / PDM debug workflow
+EM / PDM debug workflow
 ========================
 
-The debug Buildroot profile enables the external PAF package with
-`BR2_PACKAGE_PAF_DEFCONFIG="imx6ull_debug_defconfig"`. The board-local
-`local.mk` overrides PAF to `../paf`, so the image uses the workspace PAF tree.
+The debug Buildroot profile enables the external EM package with
+`BR2_PACKAGE_EM_DEFCONFIG="imx6ull_debug_defconfig"`. The board-local
+`local.mk` overrides EM to `../em`, so the image uses the workspace EM tree.
 
-When the PAF defconfig enables `CONFIG_PDI`, `CONFIG_PDEBUG`, and
+When the EM defconfig enables `CONFIG_PDI`, `CONFIG_PDEBUG`, and
 `CONFIG_PDI_CLAIM_TEST`, the target image installs:
 
   - /usr/lib/libpdi.so
